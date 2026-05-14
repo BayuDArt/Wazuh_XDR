@@ -1,0 +1,154 @@
+<group name="cti_chimera,">
+
+  <!-- 1. Induk (Parent) Rule -->
+  <rule id="100100" level="3">
+    <decoded_as>json</decoded_as>
+    <description>CTI Chimera: Analisis threat dimulai</description>
+  </rule>
+
+  <!-- 2. Anak (Child) Rules: Merujuk ke Induk (100100) -->
+  <rule id="100101" level="7">
+    <if_sid>100100</if_sid>
+    <field name="scores.status">SUSPICIOUS</field>
+    <description>CTI Chimera: File $(target.filename) MENCURIGAKAN (Skor: $(scores.final_score))</description>
+    <mitre>
+      <id>T1204.002</id>
+    </mitre>
+  </rule>
+
+  <rule id="100102" level="12">
+    <if_sid>100100</if_sid>
+    <field name="scores.status">MALICIOUS</field>
+    <description>CTI Chimera: TERDETEKSI MALWARE! File: $(target.filename) | Hash: $(target.file_hash)</description>
+    <mitre>
+      <id>T1588.002</id>
+    </mitre>
+  </rule>
+
+  <rule id="100103" level="3">
+    <if_sid>100100</if_sid>
+    <field name="scores.status">NORMAL</field>
+    <description>CTI Chimera: File $(target.filename) dinyatakan aman</description>
+  </rule>
+
+</group>
+
+<!-- 1. Grup Archive Scanner (Tetap menggunakan 10005x) -->
+<group name="custom_archive_scanner,">
+  <rule id="100050" level="3">
+    <decoded_as>json</decoded_as>
+    <field name="integration">custom_archive_scanner</field>
+    <description>Archive scan event: $(internal_file) inside $(archive_source)</description>
+  </rule>
+
+  <rule id="100051" level="10">
+    <if_sid>100050</if_sid>
+    <field name="is_pe">true</field>
+    <description>High Alert: Executable $(internal_file) found in archive $(archive_source)</description>
+    <mitre>
+      <id>T1204.002</id>
+    </mitre>
+  </rule>
+
+  <rule id="100052" level="13">
+    <if_sid>100051</if_sid>
+    <field name="alert_level">12</field>
+    <description>Critical Alert: Masquerading detected! $(internal_file) has PE header but suspicious extension</description>
+  </rule>
+</group>
+
+<!-- 2. Grup Zip Sensor (UBAH NOMOR ID-NYA DI SINI) -->
+<group name="zip_sensor_group,">
+  <rule id="100200" level="7"> <!-- Berubah dari 100050 ke 100200 -->
+    <decoded_as>json</decoded_as>
+    <field name="source">zip_sensor_script</field>
+    <description>Zip Sensor: Mendeteksi isi arsip $(archive_path)</description>
+  </rule>
+
+  <rule id="100201" level="10"> <!-- Berubah dari 100051 ke 100201 -->
+    <if_sid>100200</if_sid>
+    <field name="is_pe">true</field>
+    <description>CRITICAL: Executable ditemukan di dalam $(archive_path) - Hash: $(sha256)</description>
+  </rule>
+</group>
+
+<group name="suricata, chimera_nids,">
+  <rule id="100250" level="5">
+    <if_sid>86600</if_sid>
+    <field name="event_type">^fileinfo$</field>
+    <field name="fileinfo.sha256">\.+</field>
+    <description>CHIMERA NIDS: Ekstraksi File Terdeteksi dari Jaringan (Hash: $(fileinfo.sha256))</description>
+  </rule>
+</group>
+
+<group name="local,malware,">
+  
+  <!-- Rule 100002: Deteksi file baru/dimodifikasi yang cocok dengan CDB List SHA-256 -->
+  <rule id="100002" level="12">
+    <if_sid>554, 550</if_sid>
+    <list field="sha256" lookup="match_key">etc/lists/malware-hashes</list>
+    <description>CHIMERA IDS: File terindikasi malware (SHA-256 Blacklist) terdeteksi: $(file)</description>
+    <mitre>
+      <id>T1204.002</id>
+    </mitre>
+  </rule>
+
+  <!-- Rule 100003: Spesifik untuk target mesin Windows (Drive C-Z) -->
+  <rule id="100003" level="13">
+    <if_sid>100002</if_sid>
+    <field name="file" type="pcre2">(?i)[c-z]:</field>
+    <description>CHIMERA IDS: Malware masuk ke sistem Windows: $(file)</description>
+  </rule>
+
+  <!-- Rule 100004: Notifikasi SOAR Berhasil -->
+  <rule id="100004" level="7">
+    <if_sid>657</if_sid>
+    <match>Successfully removed threat</match>
+    <description>CHIMERA SOAR: Berhasil menghapus ancaman malware (SHA-256). Detail: $(log)</description>
+  </rule>
+
+  <!-- Rule 100005: Notifikasi SOAR Gagal -->
+  <rule id="100005" level="7">
+    <if_sid>657</if_sid>
+    <match>Error removing threat</match>
+    <description>CHIMERA SOAR: Gagal menghapus ancaman malware (SHA-256). Detail: $(log)</description>
+  </rule>
+
+</group>
+
+<group name="syscheck, malware_detection,">
+  
+  <!-- Deteksi malware berdasarkan pencocokan Hash SHA-256 dengan CDB List -->
+  <rule id="100200" level="12">
+    <if_sid>554</if_sid> <!-- Terpicu jika ada file baru atau berubah -->
+    <list field="sha256_after" lookup="match_key">etc/lists/malware-hashes</list>
+    <description>SOAR: File berbahaya terdeteksi! Hash SHA-256 cocok dengan database lokal.</description>
+    <mitre>
+      <id>T1204.002</id>
+    </mitre>
+  </rule>
+
+</group>
+
+<group name="chimera_soar,">
+  <!-- 1. Induk Aturan: Menangkap semua log JSON yang punya kolom chimera.action -->
+  <rule id="100100" level="3">
+    <decoded_as>json</decoded_as>
+    <field name="chimera.action">\.+</field>
+    <description>Chimera SOAR: Log aktivitas sistem diterima.</description>
+  </rule>
+
+  <!-- 2. Anak Aturan: Khusus untuk menghapus malware -->
+  <rule id="100500" level="12">
+    <if_sid>100100</if_sid>
+    <field name="chimera.action">^remove-threat$</field>
+    <description>Chimera SOAR: Mengeksekusi penghapusan malware dari Agen.</description>
+  </rule>
+
+  <!-- 3. Anak Aturan: Khusus untuk blokir IP di MikroTik -->
+  <rule id="100501" level="12">
+    <if_sid>100100</if_sid>
+    <field name="chimera.action">^block-ip$</field>
+    <description>Chimera SOAR: Mengeksekusi blokir IP Penyerang di MikroTik.</description>
+  </rule>
+</group>
