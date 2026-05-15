@@ -1,0 +1,32 @@
+{
+  "eb9e44c3303c915f57ebf372c6302ce0bb59085796709457ab97df071bc68fd8": {
+    "path": "/home/agent/Downloads/5eb19df5b8654b6c0879e761ce44bb7fe61727710d96aeac36a0a501efee6159.zip",
+    "agent_id": "001",
+    "ts": "2026-05-15T00:09:03.855573"
+  },
+  "275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f": {
+    "path": "/home/agent/Downloads/eicar.com.txt",
+    "agent_id": "001",
+    "ts": "2026-05-15T11:51:11.164784"
+  },
+  "a4c5ebe3c3e08de98fa40aceaf5645c46982025d03262e537a60718062a92fb4": {
+    "path": "/home/agent/Downloads/5eb19df5b8654b6c0879e761ce44bb7fe61727710d96aeac36a0a501efee6159.zip",
+    "agent_id": "001",
+    "ts": "2026-05-15T00:12:11.876877"
+  },
+  "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855": {
+    "path": "/home/agent/Downloads/eicar.com.txt",
+    "agent_id": "001",
+    "ts": "2026-05-15T11:51:11.152383"
+  },
+  "330dc6336a57ec9ed3de08dca4bd2e7e7562f21fb907afe29515dd51fb4764b1": {
+    "path": "/home/agent/Downloads/5eb19df5b8654b6c0879e761ce44bb7fe61727710d96aeac36a0a501efee6159.zip",
+    "agent_id": "001",
+    "ts": "2026-05-15T11:45:16.567245"
+  },
+  "5eb19df5b8654b6c0879e761ce44bb7fe61727710d96aeac36a0a501efee6159": {
+    "path": "/home/agent/Downloads/5eb19df5b8654b6c0879e761ce44bb7fe61727710d96aeac36a0a501efee6159/transferencia interbancaria (BBVA).exe",
+    "agent_id": "001",
+    "ts": "2026-05-15T00:12:50.994289"
+  }
+}

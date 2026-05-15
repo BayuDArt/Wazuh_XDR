@@ -1,0 +1,102 @@
+#!/var/ossec/framework/python/bin/python3
+
+import sys
+import json
+import os
+import requests
+import urllib3
+from datetime import datetime
+
+# Matikan peringatan SSL
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+# --- KONFIGURASI WAZUH API ---
+WAZUH_API_URL = "https://127.0.0.1:55000"
+WAZUH_API_USER = "chimera_api"
+WAZUH_API_PASS = "P@ssw0rd2025"
+CDB_LIST_PATH = '/var/ossec/etc/lists/malware-hashes'
+
+def append_to_cdb_silently(sha256_hash: str, malware_name: str):
+    if not sha256_hash:
+        return
+    if os.path.exists(CDB_LIST_PATH):
+        with open(CDB_LIST_PATH, 'r') as f:
+            if sha256_hash in f.read():
+                return
+    try:
+        with open(CDB_LIST_PATH, 'a') as f:
+            f.write(f"{sha256_hash}:{malware_name}\n")
+    except PermissionError:
+        pass 
+
+def trigger_active_response(agent_id: str, file_path: str):
+    try:
+        auth_resp = requests.get(
+            f"{WAZUH_API_URL}/security/user/authenticate",
+            auth=(WAZUH_API_USER, WAZUH_API_PASS),
+            verify=False,
+            timeout=5
+        )
+        if auth_resp.status_code != 200:
+            return
+
+        token = auth_resp.json().get('data', {}).get('token')
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
+        }
+        
+        # Payload untuk memanggil command Active Response
+        payload = {
+            "command": "remove-threat", 
+            "arguments": [file_path]
+        }
+
+        requests.put(
+            f"{WAZUH_API_URL}/active-response?agents_list={agent_id}",
+            headers=headers,
+            json=payload,
+            verify=False,
+            timeout=15
+        )
+    except Exception as e:
+        pass
+
+def main():
+    # 1. Wazuh Integrator memberikan lokasi file JSON alert pada argumen pertama
+    if len(sys.argv) < 2:
+        sys.exit(1)
+        
+    alert_file_path = sys.argv[1]
+    
+    # 2. Baca isi file alert JSON tersebut
+    try:
+        with open(alert_file_path, 'r') as f:
+            alert = json.load(f)
+    except Exception as e:
+        sys.exit(1)
+
+    # 3. Ekstrak data dari Alert
+    agent_id = alert.get('agent', {}).get('id', '000')
+    syscheck = alert.get('syscheck', {})
+    
+    # Ambil hash dan path (Kita fokus pada FIM event untuk contoh ini)
+    file_hash = syscheck.get('sha256_after')
+    file_path = syscheck.get('path')
+    
+    if file_hash and file_path:
+        filename = os.path.basename(file_path)
+        
+        # --- LOGIC SCORING SOAR (Asumsi memanggil fungsi atau mengecek db) ---
+        # Untuk integrasi ini, kita anggap jika alert masuk, itu perlu ditangani.
+        # Jika kamu masih memakai main_scoring.py, kamu bisa meng-importnya di sini
+        # Contoh eksekusi basmi:
+        append_to_cdb_silently(file_hash, filename)
+        trigger_active_response(agent_id, file_path)
+        
+        # Tulis log aktivitas SOAR
+        with open("/var/log/cti_decision_results.log", "a") as log:
+            log.write(f"[{datetime.now()}] Native Integration: Sent remove command to {agent_id} for {file_path}\n")
+
+if __name__ == "__main__":
+    main()
