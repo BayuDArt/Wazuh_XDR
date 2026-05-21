@@ -22,19 +22,5 @@
 -->
 
 <decoder name="local_decoder_example">
-    <program_name>local_decoder_example</program_name>
-</decoder>
-
-<decoder name="zip-analyzer">
-  <prematch>^wazuh-zip-analyzer: </prematch>
-</decoder>
-
-<decoder name="zip-analyzer-json">
-  <parent>zip-analyzer</parent>
-  <plugin_decoder>JSON_Decoder</plugin_decoder>
-</decoder>
-
-<decoder name="chimera_soar">
-  <prematch>^{"chimera"</prematch>
-  <plugin_decoder>JSON_Decoder</plugin_decoder>
+  <program_name>local_decoder_example</program_name>
 </decoder>

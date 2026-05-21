@@ -1,0 +1,129 @@
+#!/home/ubuntu/Surcata-IDS-IPS/venv/bin/python
+
+# ==============================================================================
+# NAMA FILE: block-mikrotik
+# FUNGSI   : Active Response Wazuh untuk memblokir IP di MikroTik
+# LOKASI   : /var/ossec/active-response/bin/block-mikrotik (Di Agent 005)
+# ==============================================================================
+
+import sys
+import json
+import datetime
+import os
+
+try:
+    import routeros_api
+except ImportError:
+    routeros_api = None
+
+# --- KONFIGURASI MIKROTIK ---
+MIKROTIK_IP = "192.168.11.1"
+MIKROTIK_USER = "admin"
+MIKROTIK_PASS = "" 
+MIKROTIK_PORT = 8728
+ADDRESS_LIST_NAME = "suricata_blocklist"
+BLOCK_TIMEOUT = "24h"
+
+LOG_FILE = "/var/ossec/logs/active-responses.log"
+
+def write_log(msg):
+    """Menulis log aktivitas skrip Active Response."""
+    waktu = datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S')
+    with open(LOG_FILE, mode="a") as f:
+        f.write(f"{waktu} block-mikrotik: {msg}\n")
+
+def block_ip(ip_address):
+    """Terhubung ke MikroTik via API dan menambahkan IP ke Address List."""
+    if routeros_api is None:
+        write_log("GAGAL: Library 'routeros_api' belum terinstal di virtual environment (venv)!")
+        return
+
+    write_log(f"Mencoba memblokir IP: {ip_address} di MikroTik ({MIKROTIK_IP})...")
+    
+    try:
+        connection = routeros_api.RouterOsApiPool(
+            MIKROTIK_IP, 
+            username=MIKROTIK_USER, 
+            password=MIKROTIK_PASS,
+            port=MIKROTIK_PORT, 
+            plaintext_login=True 
+        )
+        api = connection.get_api()
+        
+        address_list = api.get_resource('/ip/firewall/address-list')
+        exists = address_list.get(address=ip_address, list=ADDRESS_LIST_NAME)
+        
+        if not exists:
+            address_list.add(
+                list=ADDRESS_LIST_NAME, 
+                address=ip_address,
+                timeout=BLOCK_TIMEOUT, 
+                comment="Chimera SOAR: Otomatis diblokir karena deteksi malware jaringan"
+            )
+            write_log(f"SUKSES BESAR: IP {ip_address} berhasil diblokir selama {BLOCK_TIMEOUT}!")
+        else:
+            write_log(f"INFO: IP {ip_address} sudah ada di daftar blokir MikroTik. Diabaikan.")
+            
+        connection.disconnect()
+        
+    except Exception as e:
+        write_log(f"GAGAL: Terjadi kesalahan saat berkomunikasi dengan MikroTik: {e}")
+
+def main():
+    write_log("=== SKRIP BLOKIR MIKROTIK (WAZUH 4.X) BERJALAN ===")
+    
+    try:
+        # WAJUH 4.X LOOP PROTOCOL
+        for line in sys.stdin:
+            input_str = line.strip()
+            if not input_str:
+                continue
+
+            try:
+                data = json.loads(input_str)
+            except Exception as e:
+                write_log(f"Error parsing JSON: {e}")
+                continue
+
+            command = data.get("command")
+
+            # 1. WAJIB JAWAB PING DARI WAZUH
+            if command == "check_keys":
+                print(json.dumps({"error": 0, "message": "Keys checked"}))
+                sys.stdout.flush()
+                continue
+
+            # 2. PROSES PERINTAH EKSEKUSI
+            if command == "add":
+                target_ip = None
+                parameters = data.get("parameters", {})
+                alert_data = parameters.get("alert", {})
+                
+                # Skenario 1 & 2: Log bawaan Wazuh / Suricata asli
+                target_ip = alert_data.get("data", {}).get("srcip")
+                if not target_ip:
+                    target_ip = alert_data.get("data", {}).get("src_ip")
+                    
+                # Skenario 3: Log kustom dari SOAR Chimera (Menembus "Double Inception")
+                if not target_ip:
+                    target_ip = alert_data.get("data", {}).get("data", {}).get("target", {}).get("src_ip")
+                    
+                # Validasi IP Target
+                if not target_ip:
+                    write_log("GAGAL: Alamat IP (src_ip) tidak ditemukan di dalam log JSON.")
+                elif target_ip in ["127.0.0.1", "0.0.0.0", "localhost"]:
+                    write_log(f"DITOLAK: Upaya memblokir IP lokal ({target_ip}) dicegah.")
+                else:
+                    # Eksekusi blokir MikroTik
+                    block_ip(target_ip)
+
+                # WAJIB MELAPORKAN SUKSES KE WAZUH AGAR PROSES TIDAK HANG
+                print(json.dumps({"error": 0, "message": "Active response completed"}))
+                sys.stdout.flush()
+                return
+
+    except Exception as e:
+        write_log(f"FATAL ERROR: {str(e)}")
+
+if __name__ == "__main__":
+    main()

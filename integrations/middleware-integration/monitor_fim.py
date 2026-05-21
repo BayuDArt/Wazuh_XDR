@@ -16,15 +16,11 @@ except ImportError:
     print("❌ Error Fatal: File 'main_scoring.py' tidak ditemukan!")
     sys.exit(1)
 
-# ─── KONFIGURASI WAZUH API ───────────────────────────────────────────────────
-WAZUH_API_URL = "https://127.0.0.1:55000"
-WAZUH_API_USER = "chimera_api"
-WAZUH_API_PASS = "P@ssw0rd2025"
 CDB_LIST_PATH = '/var/ossec/etc/lists/malware-hashes'
-
 LOG_FILE = "/var/ossec/logs/alerts/alerts.json"
 FIM_STATE_FILE = "fim_state.json"
 POINTER_FILE = "fim_log_pos.txt"
+CHIMERA_LOG = "/var/log/chimera_cti.json"
 IGNORE_EXT = ('.part', '.tmp', '.crdownload', '.swp', '.temp')
 
 def append_to_cdb_silently(sha256_hash: str, malware_name: str):
@@ -41,12 +37,9 @@ def append_to_cdb_silently(sha256_hash: str, malware_name: str):
         pass
 
 def trigger_active_response(agent_id: str, file_path: str):
-    print(f"\n[*] [SOAR] Mengubah strategi: Menggunakan Jalur Log Internal Wazuh...")
+    print(f"\n[*] [SOAR] Menulis Surat Perintah Mitigasi ke Rule Engine Wazuh...")
     
-    # File tempat kita menaruh "Surat Perintah"
     log_file = "/var/log/chimera_soar.json"
-    
-    # Format JSON ini dibuat persis seperti yang diharapkan oleh skrip Agen kita
     payload = {
         "chimera": {"action": "remove-threat"},
         "data": {
@@ -56,12 +49,10 @@ def trigger_active_response(agent_id: str, file_path: str):
             }
         }
     }
-    
     try:
-        # Menulis log secara instan
         with open(log_file, "a") as f:
             f.write(json.dumps(payload) + "\n")
-        print(f"✅ [SOAR] Sukses! Surat perintah penghapusan diserahkan ke Rule Engine Wazuh.")
+        print(f"✅ [SOAR] Surat perintah sukses! Menunggu Wazuh mengeksekusi Rule 100500.")
     except Exception as e:
         print(f"❌ [SOAR] Gagal menulis log lokal: {e}")
 
@@ -73,6 +64,14 @@ def save_fim_state(file_hash: str, file_path: str, agent_id: str):
         except json.JSONDecodeError: pass
     state[file_hash] = {"path": file_path, "agent_id": agent_id, "ts": datetime.now().isoformat()}
     with open(FIM_STATE_FILE, 'w') as f: json.dump(state, f, indent=2)
+    
+def emit_to_wazuh(data: dict):
+    """Tulis hasil CTI ke file yang dipantau Wazuh."""
+    try:
+        with open(CHIMERA_LOG, "a") as f:
+            f.write(json.dumps(data) + "\n")
+    except Exception as e:
+        print(f"[!] Gagal emit log: {e}")
 
 def follow_log(filepath: str):
     if not os.path.exists(filepath): sys.exit(1)
@@ -130,6 +129,8 @@ def run_analysis_background(sha256_fim, file_path, agent_id, filename):
             analysis_data['target']['path'] = file_path
             
             print(json.dumps(analysis_data, indent=2))
+            
+            emit_to_wazuh(analysis_data)
 
             scores = analysis_data.get('scores', {})
             if scores.get('status') == 'MALICIOUS':

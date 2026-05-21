@@ -1,0 +1,7 @@
+{
+    "89.238.73.97": {
+        "status": "MALICIOUS",
+        "reason": "Matched Local CDB Hash",
+        "timestamp": "2026-05-20T03:26:56.235493"
+    }
+}

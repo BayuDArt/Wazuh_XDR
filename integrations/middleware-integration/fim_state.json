@@ -1,32 +1,67 @@
 {
-  "eb9e44c3303c915f57ebf372c6302ce0bb59085796709457ab97df071bc68fd8": {
-    "path": "/home/agent/Downloads/5eb19df5b8654b6c0879e761ce44bb7fe61727710d96aeac36a0a501efee6159.zip",
-    "agent_id": "001",
-    "ts": "2026-05-15T00:09:03.855573"
-  },
   "275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f": {
     "path": "/home/agent/Downloads/eicar.com.txt",
-    "agent_id": "001",
-    "ts": "2026-05-15T11:51:11.164784"
-  },
-  "a4c5ebe3c3e08de98fa40aceaf5645c46982025d03262e537a60718062a92fb4": {
-    "path": "/home/agent/Downloads/5eb19df5b8654b6c0879e761ce44bb7fe61727710d96aeac36a0a501efee6159.zip",
-    "agent_id": "001",
-    "ts": "2026-05-15T00:12:11.876877"
+    "agent_id": "003",
+    "ts": "2026-05-20T03:26:55.641406"
   },
   "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855": {
     "path": "/home/agent/Downloads/eicar.com.txt",
-    "agent_id": "001",
-    "ts": "2026-05-15T11:51:11.152383"
-  },
-  "330dc6336a57ec9ed3de08dca4bd2e7e7562f21fb907afe29515dd51fb4764b1": {
-    "path": "/home/agent/Downloads/5eb19df5b8654b6c0879e761ce44bb7fe61727710d96aeac36a0a501efee6159.zip",
-    "agent_id": "001",
-    "ts": "2026-05-15T11:45:16.567245"
+    "agent_id": "003",
+    "ts": "2026-05-20T03:00:44.894203"
   },
   "5eb19df5b8654b6c0879e761ce44bb7fe61727710d96aeac36a0a501efee6159": {
-    "path": "/home/agent/Downloads/5eb19df5b8654b6c0879e761ce44bb7fe61727710d96aeac36a0a501efee6159/transferencia interbancaria (BBVA).exe",
-    "agent_id": "001",
-    "ts": "2026-05-15T00:12:50.994289"
+    "path": "/home/agent/Downloads/5eb19df5b8654b6c0879e761ce44bb7fe61727710d96aeac36a0a501efee6159.bin",
+    "agent_id": "003",
+    "ts": "2026-05-20T01:22:42.488681"
+  },
+  "8603de7ca4070f6cc218e06f456615da8b27a7c0b91c688e6c8394ea4fd5dff9": {
+    "path": "/home/agent/Downloads/5eb19df5b8654b6c0879e761ce44bb7fe61727710d96aeac36a0a501efee6159.zip",
+    "agent_id": "003",
+    "ts": "2026-05-18T23:34:17.258721"
+  },
+  "909b60709d2b1c430e69a112680554b7f4fce2f44afe0567a4fcc0a725e47648": {
+    "path": "/home/agent/Downloads/5eb19df5b8654b6c0879e761ce44bb7fe61727710d96aeac36a0a501efee6159.zip",
+    "agent_id": "003",
+    "ts": "2026-05-18T23:52:35.457930"
+  },
+  "aaca6554c4b2df08fd8dc54865fd6fa9e7b6018e401e0b6a11e51e4f8caeedc0": {
+    "path": "/home/agent/Downloads/5eb19df5b8654b6c0879e761ce44bb7fe61727710d96aeac36a0a501efee6159.zip",
+    "agent_id": "003",
+    "ts": "2026-05-18T23:54:10.894513"
+  },
+  "e6968574d32ccd8f53972b652d53c9be280c66299598afdfb3721aeace5a0242": {
+    "path": "/home/agent/Downloads/5eb19df5b8654b6c0879e761ce44bb7fe61727710d96aeac36a0a501efee6159(1).zip",
+    "agent_id": "003",
+    "ts": "2026-05-18T23:54:10.926727"
+  },
+  "861031cefa6f19345c77eb3a5c82b700a73e2b84be022f392938009b87216ef4": {
+    "path": "/home/agent/Downloads/5eb19df5b8654b6c0879e761ce44bb7fe61727710d96aeac36a0a501efee6159.zip",
+    "agent_id": "003",
+    "ts": "2026-05-19T00:13:04.197255"
+  },
+  "2b08ca701fd835508c889759566622a64ee556bb645f983adecd7ee367ef5df8": {
+    "path": "/home/agent/Downloads/5eb19df5b8654b6c0879e761ce44bb7fe61727710d96aeac36a0a501efee6159(1).zip",
+    "agent_id": "003",
+    "ts": "2026-05-19T00:13:04.179801"
+  },
+  "756f2067b7a2515fcdd69ae63ad79cc3600504b0e3ece3c02eced16289972500": {
+    "path": "/home/agent/Downloads/5eb19df5b8654b6c0879e761ce44bb7fe61727710d96aeac36a0a501efee6159.zip",
+    "agent_id": "003",
+    "ts": "2026-05-19T00:32:11.134968"
+  },
+  "049d50375706f58d68e542aecaaedb3ee78a7371083831ceea653618d5e5624d": {
+    "path": "/etc/cups/subscriptions.conf",
+    "agent_id": "003",
+    "ts": "2026-05-19T05:56:30.113246"
+  },
+  "295c7195cd6a503ecad4f07a9ba4d3d6889207cc3a8e4d42f44c02573eee5228": {
+    "path": "/etc/cups/subscriptions.conf.O",
+    "agent_id": "003",
+    "ts": "2026-05-19T05:56:30.160689"
+  },
+  "11c9823bb9a9152cb059b9550ddc060b185978ca0fa70d2017366d9c4ee8bd95": {
+    "path": "/home/agent/Downloads/5eb19df5b8654b6c0879e761ce44bb7fe61727710d96aeac36a0a501efee6159.zip",
+    "agent_id": "003",
+    "ts": "2026-05-19T15:49:21.703897"
   }
 }
